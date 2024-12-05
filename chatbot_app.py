@@ -4,24 +4,53 @@ import requests
 # Функции для проверки и управления пользователем
 users = {}  # Хранилище для зарегистрированных пользователей {email: {"name": ..., "password": ...}}
 
+# Функция для проверки email через BulkEmailVerifier API
+def is_valid_email_bulkverifier(email):
+    api_key = "chat_bot"  # Замените на ваш API-ключ
+    url = "https://api.bulkemailverifier.com/v1/verify"  # URL для запроса
 
+    # Параметры запроса
+    params = {
+        'api_key': api_key,
+        'email': email
+    }
 
-def is_valid_email(email):
-    api_key = "your_hunter_api_key"
-    url = f"https://api.hunter.io/v2/email-verifier?email={email}&api_key={api_key}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        result = response.json()
-        return result['data']['status'] == "valid"
-    return False
+    try:
+        # Отправляем GET-запрос к BulkEmailVerifier API
+        response = requests.get(url, params=params)
+        response_data = response.json()
+
+        # Проверяем статус ответа
+        if response.status_code == 200:
+            result = response_data.get("result")
+            if result == "valid":
+                return True, "Email валиден!"
+            elif result == "invalid":
+                return False, "Email недействителен."
+            elif result == "unknown":
+                return False, "Неизвестный статус email."
+            else:
+                return False, "Ошибка при проверке email."
+        else:
+            return False, f"Ошибка API: {response_data.get('message', 'Неизвестная ошибка')}"
+    except Exception as e:
+        return False, f"Ошибка соединения: {str(e)}"
+
 
 def register_user(name, email, password):
-    if not is_valid_email(email):
-        return False, "Email недействителен или не существует."
+    # Проверка email через BulkEmailVerifier
+    is_valid, message = is_valid_email_bulkverifier(email)
+    if not is_valid:
+        return False, message
+    
+    # Проверка уникальности email
     if email in users:
         return False, "Email уже зарегистрирован."
+    
+    # Сохранение данных пользователя
     users[email] = {"name": name, "password": password}
     return True, "Регистрация успешна."
+
 
 def authenticate_user(email, password):
     if email in users and users[email]["password"] == password:
