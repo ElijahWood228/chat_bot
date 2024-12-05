@@ -6,7 +6,7 @@ users = {}  # Хранилище для зарегистрированных п�
 
 # Функция для проверки email через BulkEmailVerifier API
 def is_valid_email_bulkverifier(email):
-    api_key = "chat_bot"  # Замените на ваш API-ключ
+    api_key = "kTaX3A0jJmJpbvEDrwfNj"  # Замените на ваш API-ключ
     url = "https://api.bulkemailverifier.com/v1/verify"  # URL для запроса
 
     # Параметры запроса
