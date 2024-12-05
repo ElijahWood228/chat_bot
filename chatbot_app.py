@@ -61,14 +61,19 @@ def is_authenticated():
     return st.session_state.get("authenticated", False)
 
 def login(email, name):
-    st.session_state["authenticated"] = True
-    st.session_state["email"] = email
-    st.session_state["name"] = name
+    try:
+        st.session_state["authenticated"] = True
+        st.session_state["email"] = email
+        st.session_state["name"] = name
+    except Exception as e:
+        st.error(f"Ошибка при сохранении данных: {str(e)}")
 
 def logout():
     st.session_state["authenticated"] = False
     st.session_state["email"] = None
     st.session_state["name"] = None
+    
+    
 
 def echo_api(input_text):
     return f"Ответ на '{input_text}': Это пример ответа."
