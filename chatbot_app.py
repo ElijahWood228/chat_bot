@@ -5,51 +5,52 @@ import requests
 users = {}  # Хранилище для зарегистрированных пользователей {email: {"name": ..., "password": ...}}
 
 # Функция для проверки email через BulkEmailVerifier API
-def is_valid_email_bulkverifier(email):
-    api_key = "kTaX3A0jJmJpbvEDrwfNj"  # Замените на ваш API-ключ
-    url = "https://api.bulkemailverifier.com/v1/verify"  # URL для запроса
-
-    # Параметры запроса
+def verify_email(email):
+    # Ваш API-ключ, полученный на EmailListVerify
+    api_key = "your_api_key"  # Замените на свой API-ключ
+    
+    url = "https://api.email-list-verify.com/v1/verify"
+    
     params = {
-        'api_key': api_key,
-        'email': email
+        "email": email,
+        "api_key": api_key
     }
-
+    
     try:
-        # Отправляем GET-запрос к BulkEmailVerifier API
+        # Отправка запроса на проверку email
         response = requests.get(url, params=params)
-        response_data = response.json()
+        response.raise_for_status()  # Пытаемся получить успешный ответ от API (код 2xx)
+        
+        # Получение результата в формате JSON
+        result = response.json()
+        
+        # Возвращаем результат, например, статус email
+        return result
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Ошибка соединения: {e}")
+        return None
 
-        # Проверяем статус ответа
-        if response.status_code == 200:
-            result = response_data.get("result")
-            if result == "valid":
-                return True, "Email валиден!"
-            elif result == "invalid":
-                return False, "Email недействителен."
-            elif result == "unknown":
-                return False, "Неизвестный статус email."
-            else:
-                return False, "Ошибка при проверке email."
+
+def registration():
+    # Ввод данных пользователем
+    name = st.text_input("Введите имя")
+    email = st.text_input("Введите email")
+    password = st.text_input("Введите пароль", type="password")
+    
+    if st.button("Зарегистрироваться"):
+        # Проверка email на валидность через API
+        result = verify_email(email)
+        
+        if result and result.get('status') == 'valid':
+            # Если email валиден
+            st.session_state["name"] = name
+            st.session_state["email"] = email
+            st.session_state["password"] = password
+            st.success("Регистрация успешна! Проверьте свой email.")
         else:
-            return False, f"Ошибка API: {response_data.get('message', 'Неизвестная ошибка')}"
-    except Exception as e:
-        return False, f"Ошибка соединения: {str(e)}"
-
-
-def register_user(name, email, password):
-    # Проверка email через BulkEmailVerifier
-    is_valid, message = is_valid_email_bulkverifier(email)
-    if not is_valid:
-        return False, message
-    
-    # Проверка уникальности email
-    if email in users:
-        return False, "Email уже зарегистрирован."
-    
-    # Сохранение данных пользователя
-    users[email] = {"name": name, "password": password}
-    return True, "Регистрация успешна."
+            # Если email невалиден
+            st.error("Введённый email не является действительным.")
 
 
 def authenticate_user(email, password):
@@ -96,7 +97,7 @@ if menu == "Регистрация":
         password = st.text_input("Пароль", type="password")
         submitted = st.form_submit_button("Зарегистрироваться")
         if submitted:
-            success, message = register_user(name, email, password)
+            success, message = registration(name, email, password)
             st.success(message) if success else st.error(message)
 
 elif menu == "Авторизация":
