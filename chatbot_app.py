@@ -61,7 +61,7 @@ elif page == "Авторизация":
                     "email": email
                 }
                 st.success("Вход выполнен успешно!")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error(response.get("detail", "Ошибка авторизации."))
         else:
