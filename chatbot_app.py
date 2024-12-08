@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # URL FastAPI (обновите на ваш URL или оставьте заглушку)
-API_URL = "https://my-fastapi-app.onrender.com"
+API_URL = "https://fastapi-chatbot-0sfz.onrender.com"
 
 # Проверка авторизации пользователя
 if "is_logged_in" not in st.session_state:
